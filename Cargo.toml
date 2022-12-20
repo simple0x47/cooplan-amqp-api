@@ -1,5 +1,5 @@
 [package]
-name = "cooplan-essential"
+name = "cooplan-amqp-api"
 version = "0.1.0"
 edition = "2021"
 
