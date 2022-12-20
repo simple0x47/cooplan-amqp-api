@@ -1,3 +1,3 @@
 pub mod api;
-mod error;
-mod config;
+pub mod error;
+pub mod config;
