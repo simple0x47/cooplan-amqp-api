@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use jsonwebtoken::{decode, decode_header, jwk::AlgorithmParameters, DecodingKey, Validation};
 use serde_json::Value;
+use crate::api::input::token::Token;
 
-use crate::api::token::Token;
 use crate::config::api::token_validator_config;
 use crate::config::api::token_validator_config::TokenValidatorConfig;
 use crate::error::{Error, ErrorKind};

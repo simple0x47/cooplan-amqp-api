@@ -3,12 +3,11 @@ use lapin::options::{
 };
 use lapin::types::FieldTable;
 use serde::{Deserialize, Serialize};
+use crate::config::api::amqp_queue_config::AmqpQueueConfig;
 
 #[derive(Deserialize, Serialize, Clone)]
-pub struct AmqpElementAddonConfig {
-    queue_declare_options: QueueDeclareOptions,
-    queue_declare_arguments: FieldTable,
-
+pub struct AmqpInputElementAddonConfig {
+    queue: AmqpQueueConfig,
     channel_qos_prefetch_count: u16,
     channel_qos_options: BasicQosOptions,
     channel_consume_options: BasicConsumeOptions,
@@ -17,13 +16,9 @@ pub struct AmqpElementAddonConfig {
     channel_reject_options: BasicRejectOptions,
 }
 
-impl AmqpElementAddonConfig {
-    pub fn queue_options(&self) -> &QueueDeclareOptions {
-        &self.queue_declare_options
-    }
-
-    pub fn queue_arguments(&self) -> &FieldTable {
-        &self.queue_declare_arguments
+impl AmqpInputElementAddonConfig {
+    pub fn queue(&self) -> &AmqpQueueConfig {
+        &self.queue
     }
 
     pub fn channel_qos_prefetch_count(&self) -> u16 {

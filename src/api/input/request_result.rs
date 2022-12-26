@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::api::input::request_result_error::RequestResultError;
 
-use crate::api::request_result_error::RequestResultError;
 use crate::error::Error;
 
 #[derive(Deserialize, Serialize)]
