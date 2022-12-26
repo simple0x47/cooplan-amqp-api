@@ -6,7 +6,7 @@ use async_channel::Sender;
 use crate::api::input::request::Request;
 use crate::api::input::request_result::RequestResult;
 
-use crate::config::api::element_config::ElementConfig;
+use crate::config::api::input_element_config::InputElementConfig;
 
 pub type RequestHandler<LogicRequestType> = Arc<
     dyn Fn(
@@ -18,21 +18,21 @@ pub type RequestHandler<LogicRequestType> = Arc<
 >;
 
 #[derive(Clone)]
-pub struct Element<LogicRequestType> {
+pub struct InputElement<LogicRequestType> {
     name: String,
     request_handler: RequestHandler<LogicRequestType>,
     actions: &'static [&'static str],
-    config: ElementConfig,
+    config: InputElementConfig,
 }
 
-impl<LogicRequestType> Element<LogicRequestType> {
+impl<LogicRequestType> InputElement<LogicRequestType> {
     pub fn new(
         name: String,
         request_handler: RequestHandler<LogicRequestType>,
         actions: &'static [&'static str],
-        config: ElementConfig,
-    ) -> Element<LogicRequestType> {
-        Element {
+        config: InputElementConfig,
+    ) -> InputElement<LogicRequestType> {
+        InputElement {
             name,
             request_handler,
             actions,
@@ -52,7 +52,7 @@ impl<LogicRequestType> Element<LogicRequestType> {
         self.actions
     }
 
-    pub fn config(&self) -> &ElementConfig {
+    pub fn config(&self) -> &InputElementConfig {
         &self.config
     }
 }

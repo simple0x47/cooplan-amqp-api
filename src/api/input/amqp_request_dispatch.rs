@@ -1,16 +1,16 @@
 use std::sync::atomic::AtomicU16;
 use std::sync::Arc;
 
+use crate::api::input::amqp_request_replier;
+use crate::api::input::authorizer::Authorizer;
 use async_channel::Sender;
 use futures_util::TryStreamExt;
 use lapin::message::Delivery;
 use lapin::{Channel, Consumer};
 use serde_json::{Map, Value};
 use uuid::Uuid;
-use crate::api::input::amqp_request_replier;
-use crate::api::input::authorizer::Authorizer;
 
-use crate::api::input::element::Element;
+use crate::api::input::input_element::InputElement;
 use crate::api::input::request::Request;
 use crate::api::input::request_result::RequestResult;
 use crate::api::input::sanitizer::sanitize;
@@ -20,7 +20,7 @@ use super::amqp_request_replier::AmqpRequestReplier;
 
 pub struct AmqpRequestDispatch<LogicRequestType> {
     channel: Arc<Channel>,
-    element: Element<LogicRequestType>,
+    element: InputElement<LogicRequestType>,
     authorizer: Arc<Authorizer>,
     logic_request_sender: Sender<LogicRequestType>,
     current_concurrent_requests: Arc<AtomicU16>,
@@ -29,7 +29,7 @@ pub struct AmqpRequestDispatch<LogicRequestType> {
 impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
     pub fn new(
         channel: Channel,
-        element: Element<LogicRequestType>,
+        element: InputElement<LogicRequestType>,
         authorizer: Arc<Authorizer>,
         logic_request_sender: Sender<LogicRequestType>,
     ) -> AmqpRequestDispatch<LogicRequestType> {
@@ -50,8 +50,13 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
             .channel
             .queue_declare(
                 self.element.name(),
-                *self.element.config().amqp().queue_options(),
-                self.element.config().amqp().queue_arguments().clone(),
+                *self.element.config().amqp().queue().declare_options(),
+                self.element
+                    .config()
+                    .amqp()
+                    .queue()
+                    .declare_arguments()
+                    .clone(),
             )
             .await
         {
