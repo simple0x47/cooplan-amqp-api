@@ -1,5 +1,5 @@
 use async_channel::Sender;
-use crate::api::element::Element;
+use crate::api::input::element::Element;
 use crate::config::api::config::Config;
 use crate::error::Error;
 

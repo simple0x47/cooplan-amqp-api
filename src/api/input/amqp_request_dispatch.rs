@@ -7,13 +7,13 @@ use lapin::message::Delivery;
 use lapin::{Channel, Consumer};
 use serde_json::{Map, Value};
 use uuid::Uuid;
+use crate::api::input::amqp_request_replier;
+use crate::api::input::authorizer::Authorizer;
 
-use crate::api::amqp_request_replier;
-use crate::api::authorizer::Authorizer;
-use crate::api::element::Element;
-use crate::api::request::Request;
-use crate::api::request_result::RequestResult;
-use crate::api::sanitizer::sanitize;
+use crate::api::input::element::Element;
+use crate::api::input::request::Request;
+use crate::api::input::request_result::RequestResult;
+use crate::api::input::sanitizer::sanitize;
 use crate::error::{Error, ErrorKind};
 
 use super::amqp_request_replier::AmqpRequestReplier;

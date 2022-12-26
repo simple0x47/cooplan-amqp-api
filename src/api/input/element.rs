@@ -3,9 +3,9 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use async_channel::Sender;
+use crate::api::input::request::Request;
+use crate::api::input::request_result::RequestResult;
 
-use crate::api::request::Request;
-use crate::api::request_result::RequestResult;
 use crate::config::api::element_config::ElementConfig;
 
 pub type RequestHandler<LogicRequestType> = Arc<

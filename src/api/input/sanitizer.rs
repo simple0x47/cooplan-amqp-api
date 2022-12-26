@@ -1,6 +1,6 @@
 use serde_json::{Map, Value};
+use crate::api::input::request::Request;
 
-use crate::api::request::Request;
 use crate::error::{Error, ErrorKind};
 
 pub fn sanitize(

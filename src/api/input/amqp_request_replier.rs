@@ -4,8 +4,8 @@ use lapin::message::Delivery;
 use lapin::options::BasicPublishOptions;
 use lapin::types::ShortString;
 use lapin::{BasicProperties, Channel};
+use crate::api::input::request_result::RequestResult;
 
-use crate::api::request_result::RequestResult;
 use crate::error::{Error, ErrorKind};
 
 pub struct AmqpRequestReplier<'reply> {

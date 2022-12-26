@@ -1,7 +1,7 @@
-use crate::api::request_header::RequestHeader;
-use crate::api::request::Request;
-use crate::api::token_validator;
-use crate::api::token_validator::TokenValidator;
+use crate::api::input::request::Request;
+use crate::api::input::request_header::RequestHeader;
+use crate::api::input::token_validator;
+use crate::api::input::token_validator::TokenValidator;
 use crate::error::Error;
 
 pub struct Authorizer {

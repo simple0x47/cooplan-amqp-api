@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use crate::api::amqp_connection_manager::AmqpConnectionManager;
-use crate::api::amqp_request_dispatch::AmqpRequestDispatch;
-use crate::api::authorizer::try_generate_authorizer;
 use crate::api::initialization_package::InitializationPackage;
+use crate::api::input::amqp_request_dispatch::AmqpRequestDispatch;
+use crate::api::input::authorizer::try_generate_authorizer;
 use crate::config::api::amqp_connection_manager_config;
 use crate::error::Error;
 
