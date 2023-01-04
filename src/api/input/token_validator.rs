@@ -4,8 +4,8 @@ use jsonwebtoken::{decode, decode_header, jwk::AlgorithmParameters, DecodingKey,
 use serde_json::Value;
 use crate::api::input::token::Token;
 
-use crate::config::api::token_validator_config;
-use crate::config::api::token_validator_config::TokenValidatorConfig;
+use crate::config::token_validator_config;
+use crate::config::token_validator_config::TokenValidatorConfig;
 use crate::error::{Error, ErrorKind};
 
 pub struct TokenValidator {

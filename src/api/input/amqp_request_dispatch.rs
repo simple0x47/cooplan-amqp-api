@@ -28,13 +28,13 @@ pub struct AmqpRequestDispatch<LogicRequestType> {
 
 impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
     pub fn new(
-        channel: Channel,
+        channel: Arc<Channel>,
         element: InputElement<LogicRequestType>,
         authorizer: Arc<Authorizer>,
         logic_request_sender: Sender<LogicRequestType>,
     ) -> AmqpRequestDispatch<LogicRequestType> {
         AmqpRequestDispatch {
-            channel: Arc::new(channel),
+            channel,
             element,
             authorizer,
             logic_request_sender,
@@ -50,12 +50,13 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
             .channel
             .queue_declare(
                 self.element.name(),
-                *self.element.config().amqp().queue().declare_options(),
+                *self.element.config().queue_consumer().queue().declare().options(),
                 self.element
                     .config()
-                    .amqp()
+                    .queue_consumer()
                     .queue()
-                    .declare_arguments()
+                    .declare()
+                    .arguments()
                     .clone(),
             )
             .await
@@ -72,8 +73,8 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
         match self
             .channel
             .basic_qos(
-                self.element.config().amqp().channel_qos_prefetch_count(),
-                *self.element.config().amqp().channel_qos_options(),
+                self.element.config().queue_consumer().qos().prefetch_count(),
+                *self.element.config().queue_consumer().qos().options(),
             )
             .await
         {
@@ -88,8 +89,8 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
 
         let mut consumer = self.try_get_consumer(queue.name().as_str()).await?;
 
-        let reject_options = *self.element.config().amqp().channel_reject_options();
-        let acknowledge_options = *self.element.config().amqp().channel_acknowledge_options();
+        let reject_options = *self.element.config().queue_consumer().reject();
+        let acknowledge_options = *self.element.config().queue_consumer().acknowledge();
         let max_concurrent_requests = self.element.config().max_concurrent_requests();
 
         loop {
@@ -192,11 +193,12 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
             .basic_consume(
                 queue_name,
                 consumer_tag.as_str(),
-                *self.element.config().amqp().channel_consume_options(),
+                *self.element.config().queue_consumer().consume().options(),
                 self.element
                     .config()
-                    .amqp()
-                    .channel_consume_arguments()
+                    .queue_consumer()
+                    .consume()
+                    .arguments()
                     .clone(),
             )
             .await
@@ -214,7 +216,7 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
     }
 
     async fn prepare_request(&self, delivery: &Delivery) -> Result<Request, Error> {
-        let reject_options = *self.element.config().amqp().channel_reject_options();
+        let reject_options = *self.element.config().queue_consumer().reject();
 
         let request_data = match std::str::from_utf8(delivery.data.as_slice()) {
             Ok(request_data) => request_data,
