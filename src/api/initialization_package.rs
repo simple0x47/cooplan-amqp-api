@@ -18,6 +18,7 @@ pub struct InitializationPackage<LogicRequestType> {
     pub output_receiver: tokio::sync::mpsc::Receiver<(String, Value)>,
     pub output_registration: OutputRegistration,
     pub amqp_connect_config: AmqpConnectConfig,
+    pub api_configuration_file: String,
 }
 
 impl<LogicRequestType> InitializationPackage<LogicRequestType> {
@@ -27,6 +28,7 @@ impl<LogicRequestType> InitializationPackage<LogicRequestType> {
         output_receiver: tokio::sync::mpsc::Receiver<(String, Value)>,
         output_registration: OutputRegistration,
         amqp_connect_config: AmqpConnectConfig,
+        api_configuration_file: String,
     ) -> InitializationPackage<LogicRequestType> {
         InitializationPackage {
             logic_request_sender,
@@ -34,6 +36,7 @@ impl<LogicRequestType> InitializationPackage<LogicRequestType> {
             output_receiver,
             output_registration,
             amqp_connect_config,
+            api_configuration_file
         }
     }
 

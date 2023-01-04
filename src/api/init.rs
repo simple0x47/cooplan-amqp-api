@@ -13,7 +13,7 @@ pub async fn initialize<LogicRequestType: Send + 'static>(
 ) -> Result<(), Error> {
     let logic_request_sender = package.logic_request_sender();
 
-    let api_config = match cooplan_lapin_wrapper::config::api::try_get().await {
+    let api_config = match cooplan_lapin_wrapper::config::api::try_get(&package.api_configuration_file).await {
         Ok(api_config) => api_config,
         Err(error) => {
             return Err(Error::new(
