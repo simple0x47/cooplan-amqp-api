@@ -3,10 +3,9 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use async_channel::Sender;
+use cooplan_lapin_wrapper::config::amqp_input_api::AmqpInputApi;
 use crate::api::input::request::Request;
 use crate::api::input::request_result::RequestResult;
-
-use crate::config::api::input_element_config::InputElementConfig;
 
 pub type RequestHandler<LogicRequestType> = Arc<
     dyn Fn(
@@ -17,12 +16,11 @@ pub type RequestHandler<LogicRequestType> = Arc<
         + Sync,
 >;
 
-#[derive(Clone)]
 pub struct InputElement<LogicRequestType> {
     name: String,
     request_handler: RequestHandler<LogicRequestType>,
     actions: &'static [&'static str],
-    config: InputElementConfig,
+    config: AmqpInputApi,
 }
 
 impl<LogicRequestType> InputElement<LogicRequestType> {
@@ -30,7 +28,7 @@ impl<LogicRequestType> InputElement<LogicRequestType> {
         name: String,
         request_handler: RequestHandler<LogicRequestType>,
         actions: &'static [&'static str],
-        config: InputElementConfig,
+        config: AmqpInputApi,
     ) -> InputElement<LogicRequestType> {
         InputElement {
             name,
@@ -52,7 +50,7 @@ impl<LogicRequestType> InputElement<LogicRequestType> {
         self.actions
     }
 
-    pub fn config(&self) -> &InputElementConfig {
+    pub fn config(&self) -> &AmqpInputApi {
         &self.config
     }
 }

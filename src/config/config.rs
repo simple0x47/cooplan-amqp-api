@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::config::api::openid_connect_config::OpenIdConnectConfig;
+use crate::config::openid_connect_config::OpenIdConnectConfig;
 use crate::error::{Error, ErrorKind};
 
 const CONFIG_FILE: &str = "./config.json";

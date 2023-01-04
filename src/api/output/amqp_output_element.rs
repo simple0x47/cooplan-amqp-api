@@ -1,18 +1,17 @@
 use std::sync::Arc;
+use cooplan_lapin_wrapper::config::amqp_output_api::AmqpOutputApi;
 
 use lapin::Channel;
 use serde_json::Value;
 use tokio::sync::mpsc::Receiver;
 
-use crate::config::api::output_element_config::OutputElementConfig;
-
 pub struct AmqpOutputElement {
     name: String,
-    output_config: OutputElementConfig,
+    output_config: AmqpOutputApi,
 }
 
 impl AmqpOutputElement {
-    pub fn new(name: String, output_config: OutputElementConfig) -> AmqpOutputElement {
+    pub fn new(name: String, output_config: AmqpOutputApi) -> AmqpOutputElement {
         AmqpOutputElement {
             name,
             output_config,
@@ -23,24 +22,24 @@ impl AmqpOutputElement {
         self.name.as_str()
     }
 
-    pub fn output_config(&self) -> &OutputElementConfig {
+    pub fn output_config(&self) -> &AmqpOutputApi {
         &self.output_config
     }
 
-    pub fn owned_output_config(self) -> OutputElementConfig {
+    pub fn owned_output_config(self) -> AmqpOutputApi {
         self.output_config
     }
 }
 
 impl AmqpOutputElement {
     pub async fn run(self, channel: Arc<Channel>, mut receiver: Receiver<Value>) {
-        let queue = self.output_config.amqp().queue();
+        let queue = self.output_config.queue();
 
         match channel
             .queue_declare(
                 queue.name(),
-                *queue.declare_options(),
-                queue.declare_arguments().clone(),
+                *queue.declare().options(),
+                queue.declare().arguments().clone(),
             )
             .await
         {
@@ -75,13 +74,13 @@ impl AmqpOutputElement {
 
             match channel
                 .basic_publish(
-                    self.output_config.amqp().channel_publish_exchange(),
+                    self.output_config.publish().exchange(),
                     queue.name(),
-                    *self.output_config.amqp().channel_publish_options(),
+                    *self.output_config.publish().options(),
                     payload.as_slice(),
                     self.output_config
-                        .amqp()
-                        .channel_publish_properties()
+                        .publish()
+                        .properties()
                         .clone(),
                 )
                 .await

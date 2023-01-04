@@ -3,10 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use lapin::Channel;
 use serde_json::Value;
 use tokio::sync::mpsc::{Receiver, Sender};
-
-use crate::config::api::output_element_config::OutputElementConfig;
-
-use super::amqp_output_element::AmqpOutputElement;
+use crate::api::output::amqp_output_element::AmqpOutputElement;
 
 pub struct AmqpOutputRouter {
     receiver: Receiver<(String, Value)>,
@@ -15,15 +12,15 @@ pub struct AmqpOutputRouter {
 
 impl AmqpOutputRouter {
     pub fn new(
-        channel: Channel,
+        channel: Arc<Channel>,
         elements: Vec<AmqpOutputElement>,
         receiver: Receiver<(String, Value)>,
     ) -> AmqpOutputRouter {
         let mut output_senders = HashMap::new();
-        let channel = Arc::new(channel);
+        let channel = channel;
 
         for element in elements {
-            let (sender, mut receiver) = tokio::sync::mpsc::channel(1024);
+            let (sender, receiver) = tokio::sync::mpsc::channel(1024);
             output_senders.insert(element.name().to_string(), sender);
             tokio::spawn(element.run(channel.clone(), receiver));
         }
