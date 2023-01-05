@@ -52,7 +52,7 @@ pub async fn initialize<LogicRequestType: Send + 'static>(
     }
 
     let output_registration = package.output_registration;
-    let output_elements = output_registration(&api_config)?;
+    let output_elements = output_registration(&api_config, state_tracker_client.clone())?;
     let output_channel = match amqp_wrapper.try_get_channel().await {
         Ok(channel) => channel,
         Err(error) => return Err(Error::new(ErrorKind::InternalFailure, format!("failed to get channel: {}", error))),

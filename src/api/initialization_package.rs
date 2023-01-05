@@ -11,7 +11,7 @@ use super::output::amqp_output_element::AmqpOutputElement;
 pub type InputRegistration<LogicRequestType> =
     Box<dyn FnOnce(&Api) -> Result<Vec<InputElement<LogicRequestType>>, Error> + Send + Sync>;
 pub type OutputRegistration =
-    Box<dyn FnOnce(&Api) -> Result<Vec<AmqpOutputElement>, Error> + Send + Sync>;
+    Box<dyn FnOnce(&Api, StateTrackerClient) -> Result<Vec<AmqpOutputElement>, Error> + Send + Sync>;
 
 pub struct InitializationPackage<LogicRequestType> {
     logic_request_sender: Sender<LogicRequestType>,

@@ -35,8 +35,10 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
         element: InputElement<LogicRequestType>,
         authorizer: Arc<Authorizer>,
         logic_request_sender: Sender<LogicRequestType>,
-        state_tracker_client: StateTrackerClient,
+        mut state_tracker_client: StateTrackerClient,
     ) -> AmqpRequestDispatch<LogicRequestType> {
+        state_tracker_client.set_id(element.name().to_string());
+
         AmqpRequestDispatch {
             channel,
             element,
