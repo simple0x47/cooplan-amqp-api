@@ -11,7 +11,7 @@ license = "MIT"
 
 # Proprietary dependencies
 cooplan-lapin-wrapper = "0.4.1"
-cooplan-state-tracker = "0.1.4"
+cooplan-state-tracker = "0.1.5"
 
 # Third party dependencies
 serde = { version = "1.0.141", features = ["derive"] }
