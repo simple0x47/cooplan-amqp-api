@@ -3,6 +3,7 @@ use crate::error::Error;
 use async_channel::Sender;
 use cooplan_lapin_wrapper::config::amqp_connect_config::AmqpConnectConfig;
 use cooplan_lapin_wrapper::config::api::Api;
+use cooplan_state_tracker::state_tracker_client::StateTrackerClient;
 use serde_json::Value;
 
 use super::output::amqp_output_element::AmqpOutputElement;
@@ -19,6 +20,8 @@ pub struct InitializationPackage<LogicRequestType> {
     pub output_registration: OutputRegistration,
     pub amqp_connect_config: AmqpConnectConfig,
     pub api_configuration_file: String,
+    pub configuration_file: String,
+    pub state_tracker_client: StateTrackerClient
 }
 
 impl<LogicRequestType> InitializationPackage<LogicRequestType> {
@@ -29,6 +32,8 @@ impl<LogicRequestType> InitializationPackage<LogicRequestType> {
         output_registration: OutputRegistration,
         amqp_connect_config: AmqpConnectConfig,
         api_configuration_file: String,
+        configuration_file: String,
+        state_tracker_client: StateTrackerClient
     ) -> InitializationPackage<LogicRequestType> {
         InitializationPackage {
             logic_request_sender,
@@ -36,7 +41,9 @@ impl<LogicRequestType> InitializationPackage<LogicRequestType> {
             output_receiver,
             output_registration,
             amqp_connect_config,
-            api_configuration_file
+            api_configuration_file,
+            configuration_file,
+            state_tracker_client
         }
     }
 

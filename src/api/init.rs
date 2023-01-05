@@ -4,6 +4,7 @@ use cooplan_lapin_wrapper::amqp_wrapper::AmqpWrapper;
 use crate::api::initialization_package::InitializationPackage;
 use crate::api::input::amqp_request_dispatch::AmqpRequestDispatch;
 use crate::api::input::authorizer::try_generate_authorizer;
+use crate::config::config;
 use crate::error::{Error, ErrorKind};
 
 use super::output::amqp_output_router::AmqpOutputRouter;
@@ -26,7 +27,8 @@ pub async fn initialize<LogicRequestType: Send + 'static>(
     let input_registration = package.input_registration;
     let input_elements = input_registration(&api_config)?;
 
-    let authorizer = Arc::new(try_generate_authorizer().await?);
+    let config = config::try_read_config(&package.configuration_file).await?;
+    let authorizer = Arc::new(try_generate_authorizer(config).await?);
 
     let connect_config = package.amqp_connect_config;
     let mut amqp_wrapper =
@@ -35,6 +37,8 @@ pub async fn initialize<LogicRequestType: Send + 'static>(
             Err(error) => return Err(Error::new(ErrorKind::InternalFailure, format!("failed to initialize amqp wrapper: {}", error))),
         };
 
+    let state_tracker_client = package.state_tracker_client;
+
     for input_element in input_elements {
         let channel = match amqp_wrapper.try_get_channel().await {
             Ok(channel) => channel,
@@ -42,7 +46,7 @@ pub async fn initialize<LogicRequestType: Send + 'static>(
         };
 
         let dispatch =
-            AmqpRequestDispatch::new(channel, input_element, authorizer.clone(), logic_request_sender.clone());
+            AmqpRequestDispatch::new(channel, input_element, authorizer.clone(), logic_request_sender.clone(), state_tracker_client.clone());
 
         tokio::spawn(dispatch.run());
     }

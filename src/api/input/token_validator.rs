@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use jsonwebtoken::{decode, decode_header, jwk::AlgorithmParameters, DecodingKey, Validation};
 use serde_json::Value;
 use crate::api::input::token::Token;
+use crate::config::config::Config;
 
 use crate::config::token_validator_config;
 use crate::config::token_validator_config::TokenValidatorConfig;
@@ -98,8 +99,8 @@ impl TokenValidator {
     }
 }
 
-pub async fn try_generate_token_validator() -> Result<TokenValidator, Error> {
-    let token_validator_config = token_validator_config::try_generate_config().await?;
+pub async fn try_generate_token_validator(config: Config) -> Result<TokenValidator, Error> {
+    let token_validator_config = token_validator_config::try_generate_config(config).await?;
 
     Ok(TokenValidator::new(token_validator_config))
 }
