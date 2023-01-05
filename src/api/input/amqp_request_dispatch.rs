@@ -4,6 +4,8 @@ use std::sync::Arc;
 use crate::api::input::amqp_request_replier;
 use crate::api::input::authorizer::Authorizer;
 use async_channel::Sender;
+use cooplan_state_tracker::state::State;
+use cooplan_state_tracker::state_tracker_client::StateTrackerClient;
 use futures_util::TryStreamExt;
 use lapin::message::Delivery;
 use lapin::{Channel, Consumer};
@@ -24,6 +26,7 @@ pub struct AmqpRequestDispatch<LogicRequestType> {
     authorizer: Arc<Authorizer>,
     logic_request_sender: Sender<LogicRequestType>,
     current_concurrent_requests: Arc<AtomicU16>,
+    state_tracker_client: StateTrackerClient,
 }
 
 impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
@@ -32,6 +35,7 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
         element: InputElement<LogicRequestType>,
         authorizer: Arc<Authorizer>,
         logic_request_sender: Sender<LogicRequestType>,
+        state_tracker_client: StateTrackerClient,
     ) -> AmqpRequestDispatch<LogicRequestType> {
         AmqpRequestDispatch {
             channel,
@@ -39,6 +43,7 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
             authorizer,
             logic_request_sender,
             current_concurrent_requests: Arc::new(AtomicU16::new(0)),
+            state_tracker_client
         }
     }
 
@@ -102,6 +107,8 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
                 continue;
             }
 
+            let state_tracker_client = self.state_tracker_client.clone();
+
             let delivery = match consumer.try_next().await {
                 Ok(optional_delivery) => match optional_delivery {
                     Some(delivery) => delivery,
@@ -111,7 +118,14 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
                     }
                 },
                 Err(error) => {
-                    log::warn!("consumer got an error: {}", error);
+                    let error_message = format!("consumer got an error: {}", error);
+
+                    match state_tracker_client.send_state(State::Error(error_message.clone())).await {
+                        Ok(_) => (),
+                        Err(error) => log::error!("failed to send error state: {}", error)
+                    }
+
+                    log::warn!("{}", error_message);
                     continue;
                 }
             };
@@ -149,13 +163,18 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
             let current_concurrent_requests = self.current_concurrent_requests.clone();
+
             tokio::spawn(async move {
                 let result = request_handler(request, logic_request_sender).await;
+                let mut state = State::Valid;
 
                 match &result {
                     RequestResult::Ok(_) => {
                         if let Err(error) = delivery.ack(acknowledge_options).await {
-                            log::warn!("failed to acknowledge delivery: {}", error);
+                            let error_message = format!("failed to acknowledge delivery: {}", error);
+                            log::error!("{}", error_message);
+
+                            state = State::Error(error_message)
                         }
                     }
                     RequestResult::Err(error) => {
@@ -164,10 +183,18 @@ impl<LogicRequestType: Send + 'static> AmqpRequestDispatch<LogicRequestType> {
                         match delivery.reject(reject_options).await {
                             Ok(_) => (),
                             Err(error) => {
-                                log::warn!("failed to reject delivery: {}", error);
+                                let error_message = format!("failed to reject delivery: {}", error);
+                                log::error!("{}", error_message);
+
+                                state = State::Error(error_message)
                             }
                         }
                     }
+                }
+
+                match state_tracker_client.send_state(state).await {
+                    Ok(_) => (),
+                    Err(error) => log::warn!("failed to send state: {}", error)
                 }
 
                 if let Some(amqp_request_replier) =
