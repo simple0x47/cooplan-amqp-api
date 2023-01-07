@@ -1,10 +1,10 @@
 use std::sync::Arc;
+use cooplan_amqp_api_shared::api::input::request_result::RequestResult;
 
 use lapin::message::Delivery;
 use lapin::options::BasicPublishOptions;
 use lapin::types::ShortString;
 use lapin::{BasicProperties, Channel};
-use crate::api::input::request_result::RequestResult;
 
 use crate::error::{Error, ErrorKind};
 

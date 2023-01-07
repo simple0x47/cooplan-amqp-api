@@ -3,9 +3,9 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use async_channel::Sender;
+use cooplan_amqp_api_shared::api::input::request_result::RequestResult;
 use cooplan_lapin_wrapper::config::amqp_input_api::AmqpInputApi;
 use crate::api::input::request::Request;
-use crate::api::input::request_result::RequestResult;
 
 pub type RequestHandler<LogicRequestType> = Arc<
     dyn Fn(

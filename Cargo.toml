@@ -1,6 +1,6 @@
 [package]
 name = "cooplan-amqp-api"
-version = "0.6.3"
+version = "0.7.0"
 edition = "2021"
 description = "Easily create APIs that rely on the AMQP protocol by using lapin.rs"
 license = "MIT"
@@ -12,6 +12,7 @@ license = "MIT"
 # Proprietary dependencies
 cooplan-lapin-wrapper = "0.4.1"
 cooplan-state-tracker = "0.1.5"
+cooplan-amqp-api-shared = "0.1.0"
 
 # Third party dependencies
 serde = { version = "1.0.141", features = ["derive"] }

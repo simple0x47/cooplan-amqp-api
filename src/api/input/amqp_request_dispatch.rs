@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::api::input::amqp_request_replier;
 use crate::api::input::authorizer::Authorizer;
 use async_channel::Sender;
+use cooplan_amqp_api_shared::api::input::request_result::RequestResult;
 use cooplan_state_tracker::state::State;
 use cooplan_state_tracker::state_tracker_client::StateTrackerClient;
 use futures_util::TryStreamExt;
@@ -14,7 +15,6 @@ use uuid::Uuid;
 
 use crate::api::input::input_element::InputElement;
 use crate::api::input::request::Request;
-use crate::api::input::request_result::RequestResult;
 use crate::api::input::sanitizer::sanitize;
 use crate::error::{Error, ErrorKind};
 
