@@ -5,6 +5,7 @@ use serde_json::Value;
 
 use crate::error::{Error, ErrorKind};
 
+#[derive(Debug)]
 pub struct Token {
     token_data: TokenData<HashMap<String, Value>>,
 }
@@ -46,5 +47,9 @@ impl Token {
         }
 
         Ok(())
+    }
+
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        self.token_data.claims.get(key)
     }
 }
