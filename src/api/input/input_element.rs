@@ -2,10 +2,12 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 
+use crate::api::input::request::Request;
+use crate::error::{Error, ErrorKind};
 use async_channel::Sender;
 use cooplan_amqp_api_shared::api::input::request_result::RequestResult;
 use cooplan_lapin_wrapper::config::amqp_input_api::AmqpInputApi;
-use crate::api::input::request::Request;
+use cooplan_lapin_wrapper::config::api::Api;
 
 pub type RequestHandler<LogicRequestType> = Arc<
     dyn Fn(
@@ -24,7 +26,7 @@ pub struct InputElement<LogicRequestType> {
 }
 
 impl<LogicRequestType> InputElement<LogicRequestType> {
-    pub fn new(
+    fn new(
         name: String,
         request_handler: RequestHandler<LogicRequestType>,
         actions: &'static [&'static str],
@@ -53,4 +55,28 @@ impl<LogicRequestType> InputElement<LogicRequestType> {
     pub fn config(&self) -> &AmqpInputApi {
         &self.config
     }
+}
+
+pub fn extract_input<LogicRequestType>(
+    api: &Api,
+    id: &str,
+    request_handler: RequestHandler<LogicRequestType>,
+    actions: &'static [&'static str],
+) -> Result<InputElement<LogicRequestType>, Error> {
+    let api_config = match api.input().iter().find(|api_config| api_config.id() == id) {
+        Some(api_config) => api_config,
+        None => {
+            return Err(Error::new(
+                ErrorKind::AutoConfigFailure,
+                format!("failed to find input api with id '{}'", id),
+            ))
+        }
+    };
+
+    Ok(InputElement::new(
+        id.to_string(),
+        request_handler,
+        actions,
+        api_config.clone(),
+    ))
 }
