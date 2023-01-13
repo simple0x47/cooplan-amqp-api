@@ -1,6 +1,6 @@
 [package]
 name = "cooplan-amqp-api"
-version = "0.10.0"
+version = "0.10.1"
 edition = "2021"
 description = "Easily create APIs that rely on the AMQP protocol by using lapin.rs"
 license = "MIT"
