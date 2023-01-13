@@ -65,3 +65,22 @@ impl Request {
         }
     }
 }
+
+pub fn extract_parameter_from_request_data<ParameterType: DeserializeOwned>(
+    request_data: &Map<String, Value>,
+    key: &str,
+) -> Result<ParameterType, Error> {
+    match request_data.get(key) {
+        Some(raw_value) => match serde_json::from_value::<ParameterType>(raw_value.clone()) {
+            Ok(value) => Ok(value),
+            Err(error) => Err(Error::new(
+                ErrorKind::MalformedRequest,
+                format!("failed to read '{}': {}", key, error),
+            )),
+        },
+        None => Err(Error::new(
+            ErrorKind::MalformedRequest,
+            format!("request has no '{}'", key),
+        )),
+    }
+}
