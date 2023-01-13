@@ -1,21 +1,13 @@
-use serde::{Deserialize, Serialize};
+use cooplan_lapin_wrapper::config::amqp_connect_config::AmqpConnectConfig;
+use serde::{Deserialize};
 
 use crate::config::openid_connect_config::OpenIdConnectConfig;
 use crate::error::{Error, ErrorKind};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Config {
-    openid_connect: OpenIdConnectConfig,
-}
-
-impl Config {
-    pub fn openid_connect(&self) -> &OpenIdConnectConfig {
-        &self.openid_connect
-    }
-
-    pub fn owned_openid_connect(self) -> OpenIdConnectConfig {
-        self.openid_connect
-    }
+    pub openid_connect: OpenIdConnectConfig,
+    pub amqp_connect_config: AmqpConnectConfig
 }
 
 pub async fn try_read_config(config_file: &str) -> Result<Config, Error> {

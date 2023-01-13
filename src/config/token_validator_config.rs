@@ -1,5 +1,4 @@
 use jsonwebtoken::jwk::JwkSet;
-use crate::config::config::Config;
 
 use crate::error::{Error, ErrorKind};
 
@@ -27,15 +26,15 @@ impl TokenValidatorConfig {
     }
 }
 
-pub async fn try_generate_config(config: Config) -> Result<TokenValidatorConfig, Error> {
-    let jwks = match try_get_jwks(config.openid_connect().jwks_uri()).await {
+pub async fn try_generate_config(openid_connect: OpenIdConnectConfig) -> Result<TokenValidatorConfig, Error> {
+    let jwks = match try_get_jwks(openid_connect.jwks_uri()).await {
         Ok(jwks) => jwks,
         Err(error) => return Err(error),
     };
 
     Ok(TokenValidatorConfig {
         jwks,
-        openid_connect: config.owned_openid_connect(),
+        openid_connect,
     })
 }
 
