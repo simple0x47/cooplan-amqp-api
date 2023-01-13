@@ -14,7 +14,7 @@ impl Authorizer {
         Authorizer { token_validator }
     }
 
-    pub fn authorize(&self, request: Request) -> Result<Request, Error> {
+    pub fn authorize(&self, mut request: Request) -> Result<Request, Error> {
         let raw_token = request.try_get_token()?;
 
         let token = self.token_validator.validate(raw_token.as_str())?;
@@ -25,6 +25,8 @@ impl Authorizer {
 
         token.has_permission(&required_permission)?;
 
+        request.authorized_token = Some(token);
+
         Ok(request)
     }
 }
@@ -33,7 +35,9 @@ fn permission_from_header(header: RequestHeader) -> String {
     format!("{}:{}", header.action(), header.element())
 }
 
-pub async fn try_generate_authorizer(openid_connect: OpenIdConnectConfig) -> Result<Authorizer, Error> {
+pub async fn try_generate_authorizer(
+    openid_connect: OpenIdConnectConfig,
+) -> Result<Authorizer, Error> {
     let token_validator = token_validator::try_generate_token_validator(openid_connect).await?;
 
     Ok(Authorizer::new(token_validator))

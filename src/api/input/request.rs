@@ -1,19 +1,24 @@
+use crate::api::input::request_header::RequestHeader;
+use crate::api::input::token::Token;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
-use crate::api::input::request_header::RequestHeader;
 
 use crate::error::{Error, ErrorKind};
 
 #[derive(Debug)]
 pub struct Request {
     request: Map<String, Value>,
+    pub authorized_token: Option<Token>,
 }
 
 const HEADER_KEY: &str = "header";
 
 impl Request {
     pub fn new(request: Map<String, Value>) -> Request {
-        Request { request }
+        Request {
+            request,
+            authorized_token: None,
+        }
     }
 
     pub fn data(self) -> Map<String, Value> {
