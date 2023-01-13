@@ -7,7 +7,7 @@ use crate::error::{Error, ErrorKind};
 
 #[derive(Debug)]
 pub struct Request {
-    request: Map<String, Value>,
+    pub data: Map<String, Value>,
     pub authorized_token: Option<Token>,
 }
 
@@ -16,13 +16,9 @@ const HEADER_KEY: &str = "header";
 impl Request {
     pub fn new(request: Map<String, Value>) -> Request {
         Request {
-            request,
+            data: request,
             authorized_token: None,
         }
-    }
-
-    pub fn data(self) -> Map<String, Value> {
-        self.request
     }
 
     pub fn try_get_token(&self) -> Result<String, Error> {
@@ -32,7 +28,7 @@ impl Request {
     }
 
     pub fn try_get_header(&self) -> Result<RequestHeader, Error> {
-        let header = match self.request.get(HEADER_KEY) {
+        let header = match self.data.get(HEADER_KEY) {
             Some(header) => match serde_json::from_value::<RequestHeader>(header.clone()) {
                 Ok(header) => header,
                 Err(error) => {
@@ -54,7 +50,7 @@ impl Request {
     }
 
     pub fn try_get_parameter<T: DeserializeOwned>(&self, key: &str) -> Result<T, Error> {
-        match self.request.get(key) {
+        match self.data.get(key) {
             Some(raw_value) => match serde_json::from_value::<T>(raw_value.clone()) {
                 Ok(value) => Ok(value),
                 Err(error) => Err(Error::new(
