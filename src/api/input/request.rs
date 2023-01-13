@@ -1,5 +1,9 @@
 use crate::api::input::request_header::RequestHeader;
 use crate::api::input::token::Token;
+use cooplan_amqp_api_shared::api::input::request_result::RequestResult;
+use cooplan_amqp_api_shared::api::input::request_result_error::{
+    RequestResultError, RequestResultErrorKind,
+};
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
@@ -69,18 +73,18 @@ impl Request {
 pub fn extract_parameter_from_request_data<ParameterType: DeserializeOwned>(
     request_data: &Map<String, Value>,
     key: &str,
-) -> Result<ParameterType, Error> {
+) -> Result<ParameterType, RequestResult> {
     match request_data.get(key) {
         Some(raw_value) => match serde_json::from_value::<ParameterType>(raw_value.clone()) {
             Ok(value) => Ok(value),
-            Err(error) => Err(Error::new(
-                ErrorKind::MalformedRequest,
+            Err(error) => Err(RequestResult::Err(RequestResultError::new(
+                RequestResultErrorKind::MalformedRequest,
                 format!("failed to read '{}': {}", key, error),
-            )),
+            ))),
         },
-        None => Err(Error::new(
-            ErrorKind::MalformedRequest,
+        None => Err(RequestResult::Err(RequestResultError::new(
+            RequestResultErrorKind::MalformedRequest,
             format!("request has no '{}'", key),
-        )),
+        ))),
     }
 }
