@@ -11,6 +11,10 @@ pub struct Token {
 }
 
 const PERMISSIONS_CLAIM: &str = "permissions";
+/// Custom claim used in order to support easy assignations of permissions to users
+/// without having to figure out a way to edit Auth0's permissions claim.
+/// USED ONLY WHENEVER THE AUTH0'S PERMISSIONS CLAIM IS EMPTY.
+const CUSTOM_PERMISSIONS_CLAIM: &str = "permission";
 
 impl Token {
     pub fn new(token_data: TokenData<HashMap<String, Value>>) -> Token {
@@ -18,7 +22,25 @@ impl Token {
     }
 
     pub fn has_permission(&self, permission: &String) -> Result<(), Error> {
-        let permissions = match self.token_data.claims.get(PERMISSIONS_CLAIM) {
+        let mut permissions = self.get_permissions_from_claim(PERMISSIONS_CLAIM)?;
+
+        // Use custom permissions claim *ONLY* if Auth0's permission claim is empty.
+        if permissions.is_empty() {
+            permissions = self.get_permissions_from_claim(CUSTOM_PERMISSIONS_CLAIM)?;
+        }
+
+        if !permissions.contains(permission) {
+            return Err(Error::new(
+                ErrorKind::PermissionNotFound,
+                format!("permission '{}' could not be found", permission),
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn get_permissions_from_claim(&self, claim: &str) -> Result<Vec<String>, Error> {
+        let permissions = match self.token_data.claims.get(claim) {
             Some(permissions) => match serde_json::from_value::<Vec<String>>(permissions.clone()) {
                 Ok(permissions) => permissions,
                 Err(error) => {
@@ -39,14 +61,7 @@ impl Token {
             }
         };
 
-        if !permissions.contains(permission) {
-            return Err(Error::new(
-                ErrorKind::PermissionNotFound,
-                format!("permission '{}' could not be found", permission),
-            ));
-        }
-
-        Ok(())
+        Ok(permissions)
     }
 
     pub fn get(&self, key: &str) -> Option<&Value> {
