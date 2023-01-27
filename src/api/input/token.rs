@@ -5,17 +5,20 @@ use serde_json::Value;
 
 use crate::error::{Error, ErrorKind};
 
-#[derive(Debug)]
-pub struct Token {
-    token_data: TokenData<HashMap<String, Value>>,
-    permissions: Vec<String>,
-}
-
 const PERMISSIONS_CLAIM: &str = "permissions";
 /// Custom claim used in order to support easy assignations of permissions to users
 /// without having to figure out a way to edit Auth0's permissions claim.
 /// USED ONLY WHENEVER THE AUTH0'S PERMISSIONS CLAIM IS EMPTY.
 const CUSTOM_PERMISSIONS_CLAIM: &str = "permission";
+
+pub const USER_ID_CLAIM: &str = "sub";
+pub const ORGANIZATION_ID_CLAIM: &str = "organization_id";
+
+#[derive(Debug)]
+pub struct Token {
+    token_data: TokenData<HashMap<String, Value>>,
+    permissions: Vec<String>,
+}
 
 impl Token {
     pub fn try_new(token_data: TokenData<HashMap<String, Value>>) -> Result<Token, Error> {
